@@ -21,7 +21,7 @@ class ExpressionParser {
         r'(?<type>VM|TT)(?<var>\w+)TH{(?<start>[\w-+]+)..(?<end>[\w-+]+)}\.(?<exp>.+)');
 
     String variableRegexStr =
-        r'([_a-zA-Z][_\w]*)(?:[\[(]([_a-zA-Z][_\w]*)[\])])?';
+        r'([_a-zA-Z][_\w]*)(?:[\[(]([_a-zA-Z][_\w+-]*)[\])])?';
     variableRegex = RegExp(variableRegexStr);
     variableRegexFull = RegExp('^$variableRegexStr\$');
 
@@ -194,18 +194,23 @@ class ExpressionParser {
               double parsed = double.parse(token);
               exp = ConstantsExpression(parsed);
             } on FormatException {
-              var match = variableRegexFull.firstMatch(token);
-              if (match != null) {
-                var access = match.group(2);
-                exp = VariableExpression(match.group(1)!);
-                if (access != null) {
-                  exp = ArrayAccessExpression(exp, parse(access));
-                }
+              if (token.toLowerCase() == 'true' ||
+                  token.toLowerCase() == 'false') {
+                exp = ConstantsExpression(token.toLowerCase() == 'true');
               } else {
-                try {
-                  exp = parse(token);
-                } catch (e) {
-                  throw Exception('Invalid token: $token');
+                var match = variableRegexFull.firstMatch(token);
+                if (match != null) {
+                  var access = match.group(2);
+                  exp = VariableExpression(match.group(1)!);
+                  if (access != null) {
+                    exp = ArrayAccessExpression(exp, parse(access));
+                  }
+                } else {
+                  try {
+                    exp = parse(token);
+                  } catch (e) {
+                    throw Exception('Invalid token: $token');
+                  }
                 }
               }
             }

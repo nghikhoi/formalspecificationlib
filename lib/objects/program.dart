@@ -2,6 +2,7 @@ import 'package:testdart/objects/code_block.dart';
 
 class Program {
   List<Method> methods = <Method>[];
+  Method? validate;
   Method? start;
 
   String nextMethodName() {
@@ -18,6 +19,18 @@ class Program {
     ValueType.bool_array: 'bool[]',
     ValueType.string_array: 'string[]',
     ValueType.void_type: 'void',
+  };
+
+  final TYPE_DEFAULT_VALUES = {
+    ValueType.bool: 'false',
+    ValueType.int: '0',
+    ValueType.double: '0.0',
+    ValueType.string: '""',
+    ValueType.int_array: 'new int[0]',
+    ValueType.double_array: 'new double[0]',
+    ValueType.bool_array: 'new bool[0]',
+    ValueType.string_array: 'new string[0]',
+    ValueType.void_type: '',
   };
 
   String _toReadCode(ReadParameter read, [int level = 0]) {
@@ -129,6 +142,8 @@ class Program {
           '${tab}for (int ${block.name} = ${_toCode(block.start)} - 1; ${block.name} <= ${_toCode(block.end)} - 1; ${block.name}++) {\n$code$tab}';
     } else if (block is Return) {
       result = '${tab}return ${_toCode(block.code)}';
+    } else if (block is ReturnVoid) {
+      result = '${tab}return';
     } else if (block is Caller) {
       result =
           '$tab${block.name}(${block.arguments.map((e) => _toCode(e)).join(', ')})';
@@ -142,8 +157,11 @@ class Program {
       } else if (block.type == ValueType.string) {
         result = '$tab"${block.value}"';
       } else if (block.type == ValueType.bool) {
-        result = '$tab${block.value}';
+        result = '$tab${block.value.toString().toLowerCase()}';
       }
+    } else if (block is DefineParameter) {
+      var value = block.value ?? TYPE_DEFAULT_VALUES[block.type];
+      result = '$tab${TYPE_NAMES[block.type]} ${block.name} = $value';
     } else if (block is Parameter) {
       result = '$tab${TYPE_NAMES[block.type]} ${block.name}';
     } else if (block is Negate) {
@@ -151,7 +169,7 @@ class Program {
     } else if (block is Plain) {
       result = '$tab${block.text}';
     } else if (block is ReadParameter) {
-      result = '$tab${_toCode(block.parameter)};\n';
+      result = '$tab${_toCode(DefineParameter.copy(block.parameter, null))};\n';
       result += _toReadCode(block, level);
     } else if (block is Variable) {
       result = '$tab${block.name}';
@@ -173,6 +191,16 @@ class Program {
         main.body.add(ReadParameter(element));
       }
 
+      if (validate != null) {
+        methods.add(validate!);
+        var ifBlock = If(Negate(Caller(validate!.name,
+            validate!.parameters.map((e) => Variable(e.name)).toList())));
+        ifBlock.body.add(Caller('Console.WriteLine',
+            [Constant(ValueType.string, 'Invalid input')]));
+        ifBlock.body.add(ReturnVoid());
+        main.body.add(ifBlock);
+      }
+
       main.body.add(
           Caller('Console.Write', [Constant(ValueType.string, 'Result: ')]));
       main.body.add(Caller('Console.WriteLine', [
@@ -187,7 +215,7 @@ class Program {
     for (var method in methods) {
       code += '${_toCode(method, 1)}\n';
     }
-    String result = 'using System;\n\n public class Program {\n$code}';
+    String result = 'using System;\n\npublic class Program {\n$code}';
 
     return result;
   }

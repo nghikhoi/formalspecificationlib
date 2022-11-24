@@ -37,6 +37,15 @@ class Parameter extends CodeBlock {
   Parameter(this.name, this.type);
 }
 
+class DefineParameter extends Parameter {
+  final String? value;
+
+  DefineParameter(String name, ValueType type, this.value) : super(name, type);
+
+  DefineParameter.copy(Parameter parameter, this.value)
+      : super(parameter.name, parameter.type);
+}
+
 class ReadParameter extends CodeBlock {
   final Parameter parameter;
 
@@ -67,6 +76,8 @@ class Return extends CodeBlock {
 
   Return(this.code);
 }
+
+class ReturnVoid extends CodeBlock {}
 
 class Variable extends CodeBlock {
   final String name;
