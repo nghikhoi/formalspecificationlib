@@ -4,12 +4,21 @@ import 'package:testdart/specification_parser.dart';
 
 void testMatchFolder() {
   var dir = Directory('tests');
+  var outputDir = Directory('outputs');
+  outputDir.createSync();
   var files = dir.listSync();
   for (var file in files) {
     if (file is File) {
+      var fileName = file.path.substring(file.path.lastIndexOf('\\') + 1);
+      fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+
       var contents = file.readAsStringSync();
       print('Test case ${file.path}');
-      print(SpecificationParser().parse(contents));
+      var parse = SpecificationParser().parse(contents);
+      print(parse);
+
+      var outputFile = File('outputs\\${fileName}.cs');
+      outputFile.writeAsStringSync(parse);
     }
   }
 }
