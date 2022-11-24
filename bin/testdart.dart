@@ -36,6 +36,29 @@ void testMatchFolder() {
   }
 }
 
+RegExp typeIIRegex = RegExp(r'(VM|TT)(\w+)TH{([\w-+]+)..([\w-+]+)}\.(.+)');
+
+int matchTypeII(String input, int start) {
+  var i = start;
+  var parenCount = 0;
+  while (i < input.length && parenCount >= 0) {
+    var c = input[i];
+    if (c == '(') {
+      parenCount++;
+    } else if (c == ')') {
+      parenCount--;
+    }
+    i++;
+  }
+
+  String sub = input.substring(start, i - 1);
+  var match = typeIIRegex.firstMatch(sub);
+  if (match == null) {
+    return -1;
+  }
+  return i;
+}
+
 void main(List<String> arguments) {
   String input =
       '((kq=FALSE)&&(nam%4!=0))||((kq=FALSE)&&(nam%400!=0)&&(nam%100=0))||((kq=TRUE)&&(nam%4=0)&&(nam%100!=0))||((kq=TRUE)&&(nam%400=0))';
@@ -60,6 +83,15 @@ void main(List<String> arguments) {
         }
         result.add(top);
       }
+    } else if (matchTypeII(input, iter.rawIndex) != -1) {
+      if (buffer.isNotEmpty) {
+        result.add(buffer);
+        buffer = '';
+      }
+      var end = matchTypeII(input, iter.rawIndex);
+      var sub = input.substring(iter.rawIndex, end);
+      result.add(sub);
+      iter.rawIndex = end;
     } else if ('=><!|&+-/%'.contains(char)) {
       if (buffer.isNotEmpty) {
         result.add(buffer);
@@ -120,7 +152,7 @@ void main(List<String> arguments) {
   }
 
   Expression expResult = expStack.removeLast();
-  expResult.simplify();
+  expResult = expResult.rehearsal();
 
   print(expResult.toCode(0));
 }

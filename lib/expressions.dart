@@ -5,7 +5,7 @@ class ExpressionContext {
 abstract class Expression {
   dynamic calculate(ExpressionContext context);
 
-  void simplify();
+  Expression rehearsal();
 
   String toCode(int languageCode);
 }
@@ -21,7 +21,9 @@ class VariableExpression implements Expression {
   }
 
   @override
-  void simplify() {}
+  Expression rehearsal() {
+    return this;
+  }
 
   @override
   String toCode(int languageCode) {
@@ -40,7 +42,9 @@ class ConstantsExpression implements Expression {
   }
 
   @override
-  void simplify() {}
+  Expression rehearsal() {
+    return this;
+  }
 
   @override
   String toCode(int languageCode) {
@@ -54,12 +58,6 @@ abstract class MathExpression extends Expression {
   final Expression right;
 
   MathExpression(this.left, this.right);
-
-  @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
-  }
 }
 
 class AddExpression extends MathExpression {
@@ -73,6 +71,11 @@ class AddExpression extends MathExpression {
   @override
   String toCode(int languageCode) {
     return '(${left.toCode(languageCode)} + ${right.toCode(languageCode)})';
+  }
+
+  @override
+  Expression rehearsal() {
+    return AddExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -88,6 +91,11 @@ class SubtractExpression extends MathExpression {
   String toCode(int languageCode) {
     return '(${left.toCode(languageCode)} - ${right.toCode(languageCode)})';
   }
+
+  @override
+  Expression rehearsal() {
+    return SubtractExpression(left.rehearsal(), right.rehearsal());
+  }
 }
 
 class MultiplyExpression extends MathExpression {
@@ -102,6 +110,11 @@ class MultiplyExpression extends MathExpression {
   String toCode(int languageCode) {
     return '(${left.toCode(languageCode)} * ${right.toCode(languageCode)})';
   }
+
+  @override
+  Expression rehearsal() {
+    return MultiplyExpression(left.rehearsal(), right.rehearsal());
+  }
 }
 
 class NegateExpression extends Expression {
@@ -115,13 +128,13 @@ class NegateExpression extends Expression {
   }
 
   @override
-  void simplify() {
-    expression.simplify();
+  String toCode(int languageCode) {
+    return '(-${expression.toCode(languageCode)})';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '(-${expression.toCode(languageCode)})';
+  Expression rehearsal() {
+    return NegateExpression(expression.rehearsal());
   }
 }
 
@@ -137,6 +150,11 @@ class DivideExpression extends MathExpression {
   String toCode(int languageCode) {
     return '(${left.toCode(languageCode)} / ${right.toCode(languageCode)})';
   }
+
+  @override
+  Expression rehearsal() {
+    return DivideExpression(left.rehearsal(), right.rehearsal());
+  }
 }
 
 class ModuloExpression extends MathExpression {
@@ -151,6 +169,11 @@ class ModuloExpression extends MathExpression {
   String toCode(int languageCode) {
     return '(${left.toCode(languageCode)} % ${right.toCode(languageCode)})';
   }
+
+  @override
+  Expression rehearsal() {
+    return ModuloExpression(left.rehearsal(), right.rehearsal());
+  }
 }
 
 abstract class BooleanExpression extends Expression {
@@ -160,6 +183,11 @@ abstract class BooleanExpression extends Expression {
   }
 
   bool calculateBoolean(ExpressionContext context);
+
+  @override
+  BooleanExpression rehearsal() {
+    return this;
+  }
 }
 
 class GreaterThanExpression extends BooleanExpression {
@@ -175,14 +203,13 @@ class GreaterThanExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} > ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} > ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return GreaterThanExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -199,14 +226,13 @@ class GreaterThanEqualExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} >= ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} >= ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return GreaterThanEqualExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -223,14 +249,13 @@ class LessThanExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} < ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} < ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return LessThanExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -247,14 +272,13 @@ class LessThanEqualExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} <= ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} <= ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return LessThanEqualExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -271,14 +295,13 @@ class EqualExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} = ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} = ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return EqualExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -295,14 +318,13 @@ class NotEqualExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    left.simplify();
-    right.simplify();
+  String toCode(int languageCode) {
+    return '${left.toCode(languageCode)} != ${right.toCode(languageCode)}';
   }
 
   @override
-  String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} != ${right.toCode(languageCode)}';
+  BooleanExpression rehearsal() {
+    return NotEqualExpression(left.rehearsal(), right.rehearsal());
   }
 }
 
@@ -319,17 +341,17 @@ class AssignExpression extends Expression {
   }
 
   @override
-  void simplify() {
-    expression.simplify();
-  }
-
-  @override
   String toCode(int languageCode) {
     return '$variable = ${expression.toCode(languageCode)}';
   }
 
   EqualExpression toEqual() {
     return EqualExpression(VariableExpression(variable), expression);
+  }
+
+  @override
+  AssignExpression rehearsal() {
+    return AssignExpression(variable, expression.rehearsal());
   }
 }
 
@@ -353,14 +375,14 @@ class AssignConditionExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
-    assign.simplify();
-    expression.simplify();
+  String toCode(int languageCode) {
+    return 'if (${expression.toCode(languageCode)}) {\n \t${assign.toCode(languageCode)}\n}\n';
   }
 
   @override
-  String toCode(int languageCode) {
-    return 'if (${expression.toCode(languageCode)}) { ${assign.toCode(languageCode)} }';
+  BooleanExpression rehearsal() {
+    return AssignConditionExpression(
+        assign.rehearsal(), expression.rehearsal());
   }
 }
 
@@ -383,19 +405,34 @@ class OrExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
+  BooleanExpression rehearsal() {
     for (int i = 0; i < expressions.length; i++) {
-      final expression = expressions[i];
-      expression.simplify();
+      final expression = expressions[i].rehearsal();
       if (expression is OrExpression) {
         expressions.removeAt(i);
         expressions.insertAll(i, expression.expressions);
+      } else {
+        expressions[i] = expression.rehearsal();
       }
     }
+    return this;
   }
 
   @override
   String toCode(int languageCode) {
+    if (expressions.any((element) => element is AssignConditionExpression)) {
+      var code = '';
+      var temp = '';
+      for (var expression in expressions) {
+        if (expression is AssignConditionExpression) {
+          code += expression.toCode(languageCode);
+        } else {
+          code +=
+              'if (${expression.toCode(languageCode)}) {\n \treturn true;\n}\n';
+        }
+      }
+      return code;
+    }
     return expressions.map((e) => e.toCode(languageCode)).join(' || ');
   }
 }
@@ -419,19 +456,110 @@ class AndExpression extends BooleanExpression {
   }
 
   @override
-  void simplify() {
+  BooleanExpression rehearsal() {
+    if (this.expressions[0] is AssignConditionExpression) {
+      final assign = this.expressions[0] as AssignConditionExpression;
+      final condition = <BooleanExpression>[assign.expression];
+      for (int i = 1; i < expressions.length; i++) {
+        final expression = expressions[i];
+        condition.add(expression);
+      }
+      return AssignConditionExpression(
+          assign.assign, AndExpression(condition).rehearsal());
+    }
     for (int i = 0; i < expressions.length; i++) {
-      final expression = expressions[i];
-      expression.simplify();
+      final expression = expressions[i].rehearsal();
       if (expression is AndExpression) {
         expressions.removeAt(i);
         expressions.insertAll(i, expression.expressions);
+      } else {
+        expressions[i] = expression;
       }
     }
+    return this;
   }
 
   @override
   String toCode(int languageCode) {
+    if (expressions.any((element) => element is AssignConditionExpression)) {
+      var code = '';
+      var temp = '';
+      for (var expression in expressions) {
+        if (expression is AssignConditionExpression) {
+          code += expression.toCode(languageCode);
+        } else {
+          code +=
+              'if (!(${expression.toCode(languageCode)})) {\n \treturn false;\n}\n';
+        }
+      }
+      return code;
+    }
     return expressions.map((e) => e.toCode(languageCode)).join(' && ');
+  }
+}
+
+class ForAllExpression extends BooleanExpression {
+  final String variable;
+
+  final Expression expression;
+
+  final BooleanExpression condition;
+
+  ForAllExpression(this.variable, this.expression, this.condition);
+
+  @override
+  bool calculateBoolean(ExpressionContext context) {
+    final list = expression.calculate(context);
+    for (var item in list) {
+      context.variables[variable] = item;
+      if (!condition.calculate(context)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  String toCode(int languageCode) {
+    return 'for (var ${variable} in ${expression.toCode(languageCode)}) {\n \tif (!(${condition.toCode(languageCode)})) {\n \t\treturn false;\n \t}\n}\nreturn true;';
+  }
+
+  @override
+  BooleanExpression rehearsal() {
+    return ForAllExpression(variable, expression.rehearsal(),
+        condition.rehearsal() as BooleanExpression);
+  }
+}
+
+class ForAnyExpression extends BooleanExpression {
+  final String variable;
+
+  final Expression expression;
+
+  final BooleanExpression condition;
+
+  ForAnyExpression(this.variable, this.expression, this.condition);
+
+  @override
+  bool calculateBoolean(ExpressionContext context) {
+    final list = expression.calculate(context);
+    for (var item in list) {
+      context.variables[variable] = item;
+      if (condition.calculate(context)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  String toCode(int languageCode) {
+    return 'for (var ${variable} in ${expression.toCode(languageCode)}) {\n \tif (${condition.toCode(languageCode)}) {\n \t\treturn true;\n \t}\n}\nreturn false;';
+  }
+
+  @override
+  BooleanExpression rehearsal() {
+    return ForAnyExpression(variable, expression.rehearsal(),
+        condition.rehearsal() as BooleanExpression);
   }
 }

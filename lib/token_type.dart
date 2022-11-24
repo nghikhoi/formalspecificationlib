@@ -116,4 +116,6 @@ Map<String, TokenType> TOKEN_TYPES = {
   '!=': NOT_EQUAL,
   '||': OR,
   '&&': AND,
+  '∀': FORALL,
+  '∃': EXISTS,
 };
