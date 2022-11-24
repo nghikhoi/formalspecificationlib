@@ -1,4 +1,4 @@
-import 'package:testdart/expressions.dart';
+import 'package:testdart/objects/expressions.dart';
 
 class TokenType {
   final String token;

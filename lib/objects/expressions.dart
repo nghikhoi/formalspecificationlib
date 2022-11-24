@@ -529,19 +529,19 @@ class ForAllExpression extends BooleanExpression {
 
   @override
   ForAllExpression rehearsal() {
-    var variable;
-    var fromCondition; //EXPRESION
-    var toCondition; //EXPRESION
-    var condtion; //IF
-    var parameters; //PARAMETROS
+    // var variable;
+    // var fromCondition; //EXPRESION
+    // var toCondition; //EXPRESION
+    // var condtion; //IF
+    // var parameters; //PARAMETROS
 
-    var method;
+    // var method;
 
-    var program;
-    program.addMethod(method);
+    // var program;
+    // program.addMethod(method);
 
-    var parameterAsString;
-    String result = '${method.name}($parameterAsString)';
+    // var parameterAsString;
+    // String result = '${method.name}($parameterAsString)';
 
     return ForAllExpression(
         variable, start.rehearsal(), end.rehearsal(), condition.rehearsal());
@@ -574,19 +574,19 @@ class ForAnyExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    var variable;
-    var fromCondition; //EXPRESION
-    var toCondition; //EXPRESION
-    var condtion; //IF
-    var parameters; //PARAMETROS
+    // var variable;
+    // var fromCondition; //EXPRESION
+    // var toCondition; //EXPRESION
+    // var condtion; //IF
+    // var parameters; //PARAMETROS
 
-    var method;
+    // var method;
 
-    var program;
-    program.addMethod(method);
+    // var program;
+    // program.addMethod(method);
 
-    var parameterAsString;
-    String result = '${method.name}($parameterAsString)';
+    // var parameterAsString;
+    // String result = '${method.name}($parameterAsString)';
     return 'for (int $variable = ${start.toCode(languageCode)}; $variable <= ${end.toCode(languageCode)}; $variable++) {\n \tif (${condition.toCode(languageCode)}) {\n \t\treturn true;\n \t}\n}\nreturn false;';
   }
 

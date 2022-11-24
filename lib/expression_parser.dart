@@ -1,5 +1,5 @@
-import 'package:testdart/expressions.dart';
-import 'package:testdart/token_type.dart';
+import 'package:testdart/objects/expressions.dart';
+import 'package:testdart/objects/token_type.dart';
 
 class ExpressionParser {
   late RegExp cleanRegex,
@@ -27,7 +27,7 @@ class ExpressionParser {
 
     tokenRegex = RegExp(r'(>=|<=|!=|\|\||&&|=|\+|-|\*|\/|%|>|<)');
 
-    String stringRegexStr = r'"(.*)"';
+    String stringRegexStr = r'"([^"]*)"';
     stringRegex = RegExp(stringRegexStr);
     stringRegexFull = RegExp('^$stringRegexStr\$');
 

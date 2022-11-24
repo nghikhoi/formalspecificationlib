@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:testdart/expressions.dart';
+import 'package:testdart/objects/expressions.dart';
 import 'package:testdart/expression_parser.dart';
-import 'package:testdart/token_type.dart';
+import 'package:testdart/objects/token_type.dart';
 
 final ExpressionParser parser = ExpressionParser();
 
