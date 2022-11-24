@@ -1,5 +1,13 @@
+import 'package:testdart/objects/code_block.dart';
+import 'package:testdart/objects/program.dart';
+
 class ExpressionContext {
   Map<String, dynamic> variables = {};
+  Map<String, ValueType> variableTypes = {};
+}
+
+abstract class CodeBlockExpression {
+  CodeBlock? toCodeBlock(Program program, ExpressionContext context);
 }
 
 abstract class Expression {
@@ -8,6 +16,10 @@ abstract class Expression {
   Expression rehearsal();
 
   String toCode(int languageCode);
+}
+
+abstract class UnityExpression {
+  List<Expression> get expressions;
 }
 
 class VariableExpression implements Expression {
@@ -31,7 +43,33 @@ class VariableExpression implements Expression {
   }
 }
 
-class ConstantsExpression implements Expression {
+class ArrayAccessExpression implements Expression, UnityExpression {
+  final VariableExpression array;
+  final Expression index;
+
+  ArrayAccessExpression(this.array, this.index);
+
+  @override
+  dynamic calculate(ExpressionContext context) {
+    return array.calculate(context)[index.calculate(context)];
+  }
+
+  @override
+  Expression rehearsal() {
+    return this;
+  }
+
+  @override
+  String toCode(int languageCode) {
+    return '${array.toCode(languageCode)}[${index.toCode(languageCode)}]';
+  }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [array, index];
+}
+
+class ConstantsExpression implements Expression, CodeBlockExpression {
   final dynamic value;
 
   ConstantsExpression(this.value);
@@ -50,6 +88,21 @@ class ConstantsExpression implements Expression {
   String toCode(int languageCode) {
     return value.toString();
   }
+
+  @override
+  CodeBlock toCodeBlock(Program program, ExpressionContext context) {
+    if (value is String) {
+      return Constant(ValueType.string, value);
+    } else if (value is int) {
+      return Constant(ValueType.int, value);
+    } else if (value is double) {
+      return Constant(ValueType.double, value);
+    } else if (value is bool) {
+      return Constant(ValueType.bool, value);
+    } else {
+      return Plain('null');
+    }
+  }
 }
 
 abstract class MathExpression extends Expression {
@@ -60,7 +113,7 @@ abstract class MathExpression extends Expression {
   MathExpression(this.left, this.right);
 }
 
-class AddExpression extends MathExpression {
+class AddExpression extends MathExpression implements UnityExpression {
   AddExpression(Expression left, Expression right) : super(left, right);
 
   @override
@@ -77,9 +130,12 @@ class AddExpression extends MathExpression {
   Expression rehearsal() {
     return AddExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  List<Expression> get expressions => [left, right];
 }
 
-class SubtractExpression extends MathExpression {
+class SubtractExpression extends MathExpression implements UnityExpression {
   SubtractExpression(Expression left, Expression right) : super(left, right);
 
   @override
@@ -96,9 +152,13 @@ class SubtractExpression extends MathExpression {
   Expression rehearsal() {
     return SubtractExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class MultiplyExpression extends MathExpression {
+class MultiplyExpression extends MathExpression implements UnityExpression {
   MultiplyExpression(Expression left, Expression right) : super(left, right);
 
   @override
@@ -115,9 +175,13 @@ class MultiplyExpression extends MathExpression {
   Expression rehearsal() {
     return MultiplyExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class NegateExpression extends Expression {
+class NegateExpression extends Expression implements UnityExpression {
   final Expression expression;
 
   NegateExpression(this.expression);
@@ -136,9 +200,13 @@ class NegateExpression extends Expression {
   Expression rehearsal() {
     return NegateExpression(expression.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [expression];
 }
 
-class DivideExpression extends MathExpression {
+class DivideExpression extends MathExpression implements UnityExpression {
   DivideExpression(Expression left, Expression right) : super(left, right);
 
   @override
@@ -155,9 +223,13 @@ class DivideExpression extends MathExpression {
   Expression rehearsal() {
     return DivideExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class ModuloExpression extends MathExpression {
+class ModuloExpression extends MathExpression implements UnityExpression {
   ModuloExpression(Expression left, Expression right) : super(left, right);
 
   @override
@@ -174,6 +246,10 @@ class ModuloExpression extends MathExpression {
   Expression rehearsal() {
     return ModuloExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
 abstract class BooleanExpression extends Expression {
@@ -190,7 +266,8 @@ abstract class BooleanExpression extends Expression {
   }
 }
 
-class GreaterThanExpression extends BooleanExpression {
+class GreaterThanExpression extends BooleanExpression
+    implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -211,9 +288,14 @@ class GreaterThanExpression extends BooleanExpression {
   BooleanExpression rehearsal() {
     return GreaterThanExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class GreaterThanEqualExpression extends BooleanExpression {
+class GreaterThanEqualExpression extends BooleanExpression
+    implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -234,9 +316,13 @@ class GreaterThanEqualExpression extends BooleanExpression {
   BooleanExpression rehearsal() {
     return GreaterThanEqualExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class LessThanExpression extends BooleanExpression {
+class LessThanExpression extends BooleanExpression implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -257,9 +343,14 @@ class LessThanExpression extends BooleanExpression {
   BooleanExpression rehearsal() {
     return LessThanExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class LessThanEqualExpression extends BooleanExpression {
+class LessThanEqualExpression extends BooleanExpression
+    implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -280,9 +371,13 @@ class LessThanEqualExpression extends BooleanExpression {
   BooleanExpression rehearsal() {
     return LessThanEqualExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class EqualExpression extends BooleanExpression {
+class EqualExpression extends BooleanExpression implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -296,16 +391,20 @@ class EqualExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    return '${left.toCode(languageCode)} = ${right.toCode(languageCode)}';
+    return '${left.toCode(languageCode)} == ${right.toCode(languageCode)}';
   }
 
   @override
   BooleanExpression rehearsal() {
     return EqualExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class NotEqualExpression extends BooleanExpression {
+class NotEqualExpression extends BooleanExpression implements UnityExpression {
   final Expression left;
 
   final Expression right;
@@ -326,10 +425,40 @@ class NotEqualExpression extends BooleanExpression {
   BooleanExpression rehearsal() {
     return NotEqualExpression(left.rehearsal(), right.rehearsal());
   }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [left, right];
 }
 
-class AssignExpression extends Expression {
-  final String variable;
+class NotExpression extends BooleanExpression implements UnityExpression {
+  final BooleanExpression expression;
+
+  NotExpression(this.expression);
+
+  @override
+  bool calculateBoolean(ExpressionContext context) {
+    return !expression.calculateBoolean(context);
+  }
+
+  @override
+  String toCode(int languageCode) {
+    return '!(${expression.toCode(languageCode)})';
+  }
+
+  @override
+  BooleanExpression rehearsal() {
+    return NotExpression(expression.rehearsal());
+  }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [expression];
+}
+
+class AssignExpression extends Expression
+    implements CodeBlockExpression, UnityExpression {
+  final VariableExpression variable;
 
   final Expression expression;
 
@@ -337,7 +466,7 @@ class AssignExpression extends Expression {
 
   @override
   dynamic calculate(ExpressionContext context) {
-    context.variables[variable] = expression.calculate(context);
+    context.variables[variable.name] = expression.calculate(context);
   }
 
   @override
@@ -346,16 +475,29 @@ class AssignExpression extends Expression {
   }
 
   EqualExpression toEqual() {
-    return EqualExpression(VariableExpression(variable), expression);
+    return EqualExpression(variable, expression);
   }
 
   @override
   AssignExpression rehearsal() {
     return AssignExpression(variable, expression.rehearsal());
   }
+
+  @override
+  Assign toCodeBlock(Program program, ExpressionContext context) {
+    var code = expression is CodeBlockExpression
+        ? (expression as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(expression.toCode(0));
+    return Assign(variable.name, code!);
+  }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [expression];
 }
 
-class AssignConditionExpression extends BooleanExpression {
+class AssignConditionExpression extends BooleanExpression
+    implements CodeBlockExpression, UnityExpression {
   final AssignExpression assign;
 
   final BooleanExpression expression;
@@ -384,9 +526,24 @@ class AssignConditionExpression extends BooleanExpression {
     return AssignConditionExpression(
         assign.rehearsal(), expression.rehearsal());
   }
+
+  @override
+  If toCodeBlock(Program program, ExpressionContext context) {
+    var code = expression is CodeBlockExpression
+        ? (expression as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(expression.toCode(0));
+    var result = If(code!);
+    result.body.add(assign.toCodeBlock(program, context));
+    return result;
+  }
+
+  @override
+  List<Expression> get expressions => [assign, expression];
 }
 
-class OrExpression extends BooleanExpression {
+class OrExpression extends BooleanExpression
+    implements CodeBlockExpression, UnityExpression {
+  @override
   final List<BooleanExpression> expressions;
 
   OrExpression(this.expressions);
@@ -420,7 +577,7 @@ class OrExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    if (expressions.any((element) => element is AssignConditionExpression)) {
+    if (expressions.every((element) => element is AssignConditionExpression)) {
       var code = '';
       var temp = '';
       for (var expression in expressions) {
@@ -435,9 +592,28 @@ class OrExpression extends BooleanExpression {
     }
     return expressions.map((e) => e.toCode(languageCode)).join(' || ');
   }
+
+  @override
+  CodeBlock? toCodeBlock(Program program, ExpressionContext context) {
+    if (expressions.every((element) => element is AssignConditionExpression)) {
+      var head = (expressions[0] as AssignConditionExpression)
+          .toCodeBlock(program, context);
+      var temp = head;
+      for (int i = 1; i < expressions.length; i++) {
+        final expression = expressions[i] as AssignConditionExpression;
+        final next = expression.toCodeBlock(program, context);
+        temp.elseBody.add(next);
+        temp = next;
+      }
+      return head;
+    } else {
+      return Plain(toCode(0));
+    }
+  }
 }
 
-class AndExpression extends BooleanExpression {
+class AndExpression extends BooleanExpression implements UnityExpression {
+  @override
   final List<BooleanExpression> expressions;
 
   AndExpression(this.expressions);
@@ -498,8 +674,9 @@ class AndExpression extends BooleanExpression {
   }
 }
 
-class ForAllExpression extends BooleanExpression {
-  final String variable;
+class ForAllExpression extends BooleanExpression
+    implements CodeBlockExpression, UnityExpression {
+  final VariableExpression variable;
 
   final Expression start;
 
@@ -514,7 +691,7 @@ class ForAllExpression extends BooleanExpression {
     final startValue = start.calculate(context);
     final endValue = end.calculate(context);
     for (var i = startValue; i <= endValue; i++) {
-      context.variables[variable] = i;
+      context.variables[variable.name] = i;
       if (!condition.calculate(context)) {
         return false;
       }
@@ -529,27 +706,77 @@ class ForAllExpression extends BooleanExpression {
 
   @override
   ForAllExpression rehearsal() {
-    // var variable;
-    // var fromCondition; //EXPRESION
-    // var toCondition; //EXPRESION
-    // var condtion; //IF
-    // var parameters; //PARAMETROS
-
-    // var method;
-
-    // var program;
-    // program.addMethod(method);
-
-    // var parameterAsString;
-    // String result = '${method.name}($parameterAsString)';
-
     return ForAllExpression(
         variable, start.rehearsal(), end.rehearsal(), condition.rehearsal());
   }
+
+  @override
+  Caller toCodeBlock(Program program, ExpressionContext context) {
+    var stack = [start, end, condition];
+    var args = <String>{};
+
+    var toRemoved = <String>{variable.name};
+
+    while (stack.isNotEmpty) {
+      var expression = stack.removeLast();
+      if (expression is VariableExpression) {
+        args.add(expression.name);
+      } else if (expression is UnityExpression) {
+        stack.addAll((expression as UnityExpression).expressions);
+        if (expression is ForAllExpression) {
+          toRemoved.add(expression.variable.name);
+        } else if (expression is ForAnyExpression) {
+          toRemoved.add(expression.variable.name);
+        }
+      }
+    }
+
+    for (var element in toRemoved) {
+      args.remove(element);
+    }
+    var parameters =
+        args.map((e) => Parameter(e, context.variableTypes[e]!)).toList();
+
+    context.variableTypes[variable.name] = ValueType.int;
+    context.variables[variable.name] = 0;
+
+    var startBlock = start is CodeBlockExpression
+        ? (start as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(start.toCode(0));
+    var endBlock = end is CodeBlockExpression
+        ? (end as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(end.toCode(0));
+
+    var code = condition is CodeBlockExpression
+        ? (condition as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(condition.toCode(0));
+
+    context.variableTypes.remove(variable.name);
+    context.variables.remove(variable.name);
+
+    var ifBlock = If(Negate(code!));
+    ifBlock.body.add(Return(Constant(ValueType.bool, false)));
+
+    var forBlock = For(variable.name, startBlock!, endBlock!);
+    forBlock.body.add(ifBlock);
+
+    var method = Method(program.nextMethodName(), ValueType.bool, parameters);
+    method.body.add(forBlock);
+    method.body.add(Return(Constant(ValueType.bool, true)));
+
+    program.methods.add(method);
+
+    return Caller(method.name, args.map((e) => Variable(e)).toList());
+  }
+
+  @override
+  // TODO: implement expressions
+  List<Expression> get expressions => [start, end, condition];
 }
 
-class ForAnyExpression extends BooleanExpression {
-  final String variable;
+class ForAnyExpression extends BooleanExpression
+    implements CodeBlockExpression, UnityExpression {
+  final VariableExpression variable;
 
   final Expression start;
 
@@ -564,7 +791,7 @@ class ForAnyExpression extends BooleanExpression {
     final startValue = start.calculate(context);
     final endValue = end.calculate(context);
     for (var i = startValue; i <= endValue; i++) {
-      context.variables[variable] = i;
+      context.variables[variable.name] = i;
       if (condition.calculate(context)) {
         return true;
       }
@@ -574,19 +801,6 @@ class ForAnyExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    // var variable;
-    // var fromCondition; //EXPRESION
-    // var toCondition; //EXPRESION
-    // var condtion; //IF
-    // var parameters; //PARAMETROS
-
-    // var method;
-
-    // var program;
-    // program.addMethod(method);
-
-    // var parameterAsString;
-    // String result = '${method.name}($parameterAsString)';
     return 'for (int $variable = ${start.toCode(languageCode)}; $variable <= ${end.toCode(languageCode)}; $variable++) {\n \tif (${condition.toCode(languageCode)}) {\n \t\treturn true;\n \t}\n}\nreturn false;';
   }
 
@@ -595,4 +809,66 @@ class ForAnyExpression extends BooleanExpression {
     return ForAnyExpression(
         variable, start.rehearsal(), end.rehearsal(), condition.rehearsal());
   }
+
+  @override
+  Caller toCodeBlock(Program program, ExpressionContext context) {
+    var stack = [start, end, condition];
+    var args = <String>{};
+
+    var toRemoved = <String>{variable.name};
+
+    while (stack.isNotEmpty) {
+      var expression = stack.removeLast();
+      if (expression is VariableExpression) {
+        args.add(expression.name);
+      } else if (expression is UnityExpression) {
+        stack.addAll((expression as UnityExpression).expressions);
+        if (expression is ForAllExpression) {
+          toRemoved.add(expression.variable.name);
+        } else if (expression is ForAnyExpression) {
+          toRemoved.add(expression.variable.name);
+        }
+      }
+    }
+
+    for (var element in toRemoved) {
+      args.remove(element);
+    }
+    var parameters =
+        args.map((e) => Parameter(e, context.variableTypes[e]!)).toList();
+
+    context.variableTypes[variable.name] = ValueType.int;
+    context.variables[variable.name] = 0;
+
+    var startBlock = start is CodeBlockExpression
+        ? (start as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(start.toCode(0));
+    var endBlock = end is CodeBlockExpression
+        ? (end as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(end.toCode(0));
+
+    var code = condition is CodeBlockExpression
+        ? (condition as CodeBlockExpression).toCodeBlock(program, context)
+        : Plain(condition.toCode(0));
+
+    context.variableTypes.remove(variable.name);
+    context.variables.remove(variable.name);
+
+    var ifBlock = If(code!);
+    ifBlock.body.add(Return(Constant(ValueType.bool, true)));
+
+    var forBlock = For(variable.name, startBlock!, endBlock!);
+    forBlock.body.add(ifBlock);
+
+    var method = Method(program.nextMethodName(), ValueType.bool, parameters);
+    method.body.add(forBlock);
+    method.body.add(Return(Constant(ValueType.bool, false)));
+
+    program.methods.add(method);
+
+    return Caller(method.name, args.map((e) => Variable(e)).toList());
+  }
+
+  @override
+  List<Expression> get expressions => [start, end, condition];
 }

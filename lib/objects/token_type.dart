@@ -22,7 +22,7 @@ TokenType EQUAL = TokenType('=', 1, 2, (inputs) {
   var left = inputs[1];
   var right = inputs[0];
   if (left is VariableExpression) {
-    return AssignExpression(left.name, right);
+    return AssignExpression(left, right);
   }
   return EqualExpression(left, right);
 });
@@ -111,7 +111,7 @@ TokenType FORALL = TokenType('∀', 2, 4, (inputs) {
   if (condition is! BooleanExpression) {
     throw Exception('Invalid condition for FORALL');
   }
-  return ForAllExpression(variable.name, start, end, condition);
+  return ForAllExpression(variable, start, end, condition);
 });
 
 TokenType FORANY = TokenType('∃', 2, 4, (inputs) {
@@ -125,7 +125,7 @@ TokenType FORANY = TokenType('∃', 2, 4, (inputs) {
   if (condition is! BooleanExpression) {
     throw Exception('Invalid condition for FORANY');
   }
-  return ForAnyExpression(variable.name, start, end, condition);
+  return ForAnyExpression(variable, start, end, condition);
 });
 
 Map<String, TokenType> TOKEN_TYPES = {
