@@ -100,6 +100,34 @@ TokenType AND = TokenType('&&', 2, 2, (inputs) {
   return AndExpression.simple(left, right);
 });
 
+TokenType FORALL = TokenType('∀', 2, 4, (inputs) {
+  var variable = inputs[3];
+  var start = inputs[2];
+  var end = inputs[1];
+  var condition = inputs[0];
+  if (variable is! VariableExpression) {
+    throw Exception('Invalid variable for FORALL');
+  }
+  if (condition is! BooleanExpression) {
+    throw Exception('Invalid condition for FORALL');
+  }
+  return ForAllExpression(variable.name, start, end, condition);
+});
+
+TokenType FORANY = TokenType('∃', 2, 4, (inputs) {
+  var variable = inputs[3];
+  var start = inputs[2];
+  var end = inputs[1];
+  var condition = inputs[0];
+  if (variable is! VariableExpression) {
+    throw Exception('Invalid variable for FORANY');
+  }
+  if (condition is! BooleanExpression) {
+    throw Exception('Invalid condition for FORANY');
+  }
+  return ForAnyExpression(variable.name, start, end, condition);
+});
+
 Map<String, TokenType> TOKEN_TYPES = {
   '(': LEFT_PAREN,
   '=': EQUAL,
@@ -117,5 +145,5 @@ Map<String, TokenType> TOKEN_TYPES = {
   '||': OR,
   '&&': AND,
   '∀': FORALL,
-  '∃': EXISTS,
+  '∃': FORANY,
 };

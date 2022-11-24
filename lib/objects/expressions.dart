@@ -501,17 +501,20 @@ class AndExpression extends BooleanExpression {
 class ForAllExpression extends BooleanExpression {
   final String variable;
 
-  final Expression expression;
+  final Expression start;
+
+  final Expression end;
 
   final BooleanExpression condition;
 
-  ForAllExpression(this.variable, this.expression, this.condition);
+  ForAllExpression(this.variable, this.start, this.end, this.condition);
 
   @override
   bool calculateBoolean(ExpressionContext context) {
-    final list = expression.calculate(context);
-    for (var item in list) {
-      context.variables[variable] = item;
+    final startValue = start.calculate(context);
+    final endValue = end.calculate(context);
+    for (var i = startValue; i <= endValue; i++) {
+      context.variables[variable] = i;
       if (!condition.calculate(context)) {
         return false;
       }
@@ -521,30 +524,47 @@ class ForAllExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    return 'for (var ${variable} in ${expression.toCode(languageCode)}) {\n \tif (!(${condition.toCode(languageCode)})) {\n \t\treturn false;\n \t}\n}\nreturn true;';
+    return 'for (int $variable = ${start.toCode(languageCode)}; $variable <= ${end.toCode(languageCode)}; $variable++) {\n \tif (!(${condition.toCode(languageCode)})) {\n \t\treturn false;\n \t}\n}\nreturn true;';
   }
 
   @override
-  BooleanExpression rehearsal() {
-    return ForAllExpression(variable, expression.rehearsal(),
-        condition.rehearsal() as BooleanExpression);
+  ForAllExpression rehearsal() {
+    var variable;
+    var fromCondition; //EXPRESION
+    var toCondition; //EXPRESION
+    var condtion; //IF
+    var parameters; //PARAMETROS
+
+    var method;
+
+    var program;
+    program.addMethod(method);
+
+    var parameterAsString;
+    String result = '${method.name}($parameterAsString)';
+
+    return ForAllExpression(
+        variable, start.rehearsal(), end.rehearsal(), condition.rehearsal());
   }
 }
 
 class ForAnyExpression extends BooleanExpression {
   final String variable;
 
-  final Expression expression;
+  final Expression start;
+
+  final Expression end;
 
   final BooleanExpression condition;
 
-  ForAnyExpression(this.variable, this.expression, this.condition);
+  ForAnyExpression(this.variable, this.start, this.end, this.condition);
 
   @override
   bool calculateBoolean(ExpressionContext context) {
-    final list = expression.calculate(context);
-    for (var item in list) {
-      context.variables[variable] = item;
+    final startValue = start.calculate(context);
+    final endValue = end.calculate(context);
+    for (var i = startValue; i <= endValue; i++) {
+      context.variables[variable] = i;
       if (condition.calculate(context)) {
         return true;
       }
@@ -554,12 +574,25 @@ class ForAnyExpression extends BooleanExpression {
 
   @override
   String toCode(int languageCode) {
-    return 'for (var ${variable} in ${expression.toCode(languageCode)}) {\n \tif (${condition.toCode(languageCode)}) {\n \t\treturn true;\n \t}\n}\nreturn false;';
+    var variable;
+    var fromCondition; //EXPRESION
+    var toCondition; //EXPRESION
+    var condtion; //IF
+    var parameters; //PARAMETROS
+
+    var method;
+
+    var program;
+    program.addMethod(method);
+
+    var parameterAsString;
+    String result = '${method.name}($parameterAsString)';
+    return 'for (int $variable = ${start.toCode(languageCode)}; $variable <= ${end.toCode(languageCode)}; $variable++) {\n \tif (${condition.toCode(languageCode)}) {\n \t\treturn true;\n \t}\n}\nreturn false;';
   }
 
   @override
-  BooleanExpression rehearsal() {
-    return ForAnyExpression(variable, expression.rehearsal(),
-        condition.rehearsal() as BooleanExpression);
+  ForAnyExpression rehearsal() {
+    return ForAnyExpression(
+        variable, start.rehearsal(), end.rehearsal(), condition.rehearsal());
   }
 }
